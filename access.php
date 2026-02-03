@@ -7,7 +7,7 @@ session_start();
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DBI Infomatics | Agent Portal</title>
+  <title>Firewall Login</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -30,26 +30,10 @@ session_start();
       overflow: hidden;
     }
 
-    /* Animated gradient background */
-    body::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: 
-        radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
-      animation: gradientShift 15s ease infinite;
-      z-index: -1;
-    }
-
     .login-container {
       width: 100%;
       max-width: 420px;
-      animation: slideUp 0.8s ease-out;
+      animation: slideUp 0.5s ease-out; /* Faster */
     }
 
     .login-card {
@@ -144,7 +128,7 @@ session_start();
       align-items: center;
     }
 
-    /* Enhanced Circle Animation */
+    /* Enhanced Circle Animation - Faster */
     .minimal-circle {
       position: absolute;
       width: 80px;
@@ -153,7 +137,7 @@ session_start();
       border: 1.5px solid rgba(59, 130, 246, 0.3);
       z-index: 1;
       opacity: 0;
-      animation: circleAppear 1.2s ease-out 0.3s forwards;
+      animation: circleAppear 0.8s ease-out 0.2s forwards; /* Faster */
       box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
     }
 
@@ -166,11 +150,11 @@ session_start();
       top: -4px;
       left: 50%;
       transform: translateX(-50%);
-      animation: rotateMinimal 8s linear infinite;
+      animation: rotateMinimal 6s linear infinite; /* Faster */
       box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
     }
 
-    /* DBI Logo with enhanced animations */
+    /* DBI Logo with faster animations */
     .dbi-logo {
       text-align: center;
       position: relative;
@@ -187,24 +171,14 @@ session_start();
       -webkit-text-fill-color: transparent;
       background-clip: text;
       opacity: 0;
-      animation: textGlow 1s ease-out 0.8s forwards, pulseSoft 3s infinite 2s;
+      animation: textGlow 0.6s ease-out 0.4s forwards, pulseSoft 3s infinite 1s forwards; /* Faster delays */
       text-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
     }
 
-    .dbi-sub {
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 2px;
-      color: #94a3b8;
-      margin-bottom: 6px;
-      opacity: 0;
-      animation: textAppear 0.8s ease-out 1s forwards, floatSubtitle 6s ease-in-out infinite 3s;
-    }
-
-    /* Form Section with animations */
+    /* Form Section with faster animations */
     .login-form {
       padding: 30px 40px;
-      animation: fadeInForm 1s ease-out 1.6s forwards;
+      animation: fadeInForm 0.2s ease-out 0.4s forwards; /* Much faster */
       opacity: 0;
     }
 
@@ -227,24 +201,25 @@ session_start();
       width: 60px;
       height: 2px;
       background: linear-gradient(to right, transparent, #3b82f6, transparent);
-      animation: lineExpand 1.2s ease-out 2s forwards;
+      animation: lineExpand 0.8s ease-out 1s forwards; /* Faster */
       transform-origin: center;
       transform: scaleX(0);
     }
 
+    /* Faster form group animations */
     .form-group {
       margin-bottom: 20px;
-      animation: slideInRight 0.6s ease-out forwards;
+      animation: slideInRight 0.2s ease-out forwards; /* Faster */
       opacity: 0;
       transform: translateX(-20px);
     }
 
     .form-group:nth-child(1) {
-      animation-delay: 2.2s;
+      animation-delay: 0.2s; /* Much shorter delay */
     }
 
     .form-group:nth-child(2) {
-      animation-delay: 2.4s;
+      animation-delay: 0.2s; /* Much shorter delay */
     }
 
     .form-label {
@@ -254,7 +229,7 @@ session_start();
       font-weight: 500;
       margin-bottom: 6px;
       transform: translateY(0);
-      transition: transform 0.3s ease, color 0.3s ease;
+      transition: transform 0.2s ease, color 0.2s ease; /* Faster transitions */
     }
 
     .form-label:hover {
@@ -273,7 +248,7 @@ session_start();
       transform: translateY(-50%);
       color: #64748b;
       font-size: 16px;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease; /* Faster */
     }
 
     .form-control {
@@ -283,7 +258,7 @@ session_start();
       border-radius: 8px;
       font-size: 14px;
       color: #e2e8f0;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease; /* Faster */
       background: rgba(15, 23, 42, 0.6);
     }
 
@@ -303,7 +278,7 @@ session_start();
 
     .form-control::placeholder {
       color: #64748b;
-      transition: color 0.3s ease;
+      transition: color 0.2s ease; /* Faster */
     }
 
     .form-control:focus::placeholder {
@@ -321,7 +296,7 @@ session_start();
       cursor: pointer;
       font-size: 16px;
       padding: 0;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease; /* Faster */
     }
 
     .password-toggle:hover {
@@ -330,7 +305,7 @@ session_start();
       text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
     }
 
-    /* FIXED: Enhanced Login Button - Removed visibility issues */
+    /* Faster button animation */
     .login-btn {
       width: 100%;
       background: linear-gradient(90deg, #3b82f6, #2563eb);
@@ -345,26 +320,14 @@ session_start();
       justify-content: center;
       align-items: center;
       gap: 8px;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease; /* Faster */
       position: relative;
       overflow: hidden;
-      animation: slideInUp 0.8s ease-out 2.6s forwards;
+      animation: slideInUp 0.2s ease-out 0.4s forwards; /* Faster with shorter delay */
       opacity: 0;
       transform: translateY(20px);
       box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
     }
-
-    /* REMOVED the problematic ::before pseudo-element that was causing invisibility */
-    /* .login-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: 0.5s;
-    } */
 
     .login-btn:hover {
       background: linear-gradient(90deg, #2563eb, #1d4ed8);
@@ -372,17 +335,12 @@ session_start();
       box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
     }
 
-    /* REMOVED this problematic hover effect */
-    /* .login-btn:hover::before {
-      left: 100%;
-    } */
-
     .login-btn:active {
       transform: translateY(0);
       box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3);
     }
 
-    /* NEW: Add shine effect without visibility issues */
+    /* Shine effect with faster animation */
     .login-btn::after {
       content: '';
       position: absolute;
@@ -397,7 +355,7 @@ session_start();
         rgba(255, 255, 255, 0) 100%
       );
       transform: rotate(30deg);
-      transition: transform 0.6s;
+      transition: transform 0.4s; /* Faster */
       opacity: 0;
     }
 
@@ -413,7 +371,7 @@ session_start();
       border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
       border-top-color: white;
-      animation: spin 1s linear infinite;
+      animation: spin 0.8s linear infinite; /* Faster */
     }
 
     .login-btn.loading .btn-text {
@@ -434,7 +392,7 @@ session_start();
       align-items: center;
       gap: 10px;
       font-size: 13px;
-      animation: shake 0.5s ease-out;
+      animation: shake 0.4s ease-out; /* Faster */
       transform-origin: center;
       background: rgba(15, 23, 42, 0.8);
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -450,28 +408,28 @@ session_start();
       color: #86efac;
       border-color: rgba(34, 197, 94, 0.3);
       box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
-      animation: bounceIn 0.6s ease-out;
+      animation: bounceIn 0.5s ease-out; /* Faster */
     }
 
     .status-message i {
       font-size: 16px;
     }
 
-    /* Footer */
+    /* Footer with faster animation */
     .login-footer {
       text-align: center;
       padding: 20px 40px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       color: #94a3b8;
       font-size: 12px;
-      animation: fadeIn 1s ease-out 2.8s forwards;
+      animation: fadeIn 0.6s ease-out 1.8s forwards; /* Faster with shorter delay */
       opacity: 0;
       background: rgba(15, 23, 42, 0.6);
     }
 
     .copyright {
       opacity: 0.7;
-      transition: opacity 0.3s ease, color 0.3s ease;
+      transition: opacity 0.2s ease, color 0.2s ease; /* Faster */
     }
 
     .copyright:hover {
@@ -479,7 +437,7 @@ session_start();
       color: #cbd5e1;
     }
 
-    /* Animation Keyframes */
+    /* Animation Keyframes - Faster durations */
     @keyframes gradientShift {
       0%, 100% {
         transform: scale(1) rotate(0deg);
@@ -705,8 +663,6 @@ session_start();
 
       <!-- Form Section -->
       <div class="login-form">
-
-        
         <form action="inc/code.php" method="post" id="loginForm">
           <!-- Username Field -->
           <div class="form-group">
@@ -764,25 +720,22 @@ session_start();
           ?>
         </form>
       </div>
-
-      <!-- Footer -->
-
     </div>
   </div>
 
   <script>
-    // Enhanced animations on page load
+    // Enhanced animations on page load - Faster
     document.addEventListener('DOMContentLoaded', function() {
-      // Auto-focus on username field with delay
+      // Auto-focus on username field with much shorter delay
       setTimeout(() => {
         document.getElementById('user').focus();
-      }, 2000);
+      }, 800); // Reduced from 2000ms to 800ms
       
       // Restart circle animation
       const minimalCircle = document.querySelector('.minimal-circle');
       minimalCircle.style.animation = 'none';
       setTimeout(() => {
-        minimalCircle.style.animation = 'circleAppear 1.2s ease-out 0.3s forwards';
+        minimalCircle.style.animation = 'circleAppear 0.8s ease-out 0.2s forwards';
       }, 10);
       
       // Add typing effect to inputs on focus
@@ -793,7 +746,7 @@ session_start();
           this.parentElement.querySelector('.input-icon').style.color = '#3b82f6';
           this.style.animation = 'none';
           setTimeout(() => {
-            this.style.animation = 'pulseSoft 2s infinite';
+            this.style.animation = 'pulseSoft 1.5s infinite'; // Faster
           }, 10);
         });
         
@@ -815,7 +768,7 @@ session_start();
             border-radius: 50%;
             background: rgba(59, 130, 246, 0.3);
             transform: scale(0);
-            animation: ripple 0.6s linear;
+            animation: ripple 0.4s linear; /* Faster */
             width: ${size}px;
             height: ${size}px;
             top: ${y}px;
@@ -824,7 +777,7 @@ session_start();
           `;
           
           this.appendChild(ripple);
-          setTimeout(() => ripple.remove(), 600);
+          setTimeout(() => ripple.remove(), 400); // Faster
         });
       });
       
@@ -844,7 +797,7 @@ session_start();
           border-radius: 50%;
           background: rgba(255, 255, 255, 0.4);
           transform: scale(0);
-          animation: ripple 0.6s linear;
+          animation: ripple 0.4s linear; /* Faster */
           width: ${size}px;
           height: ${size}px;
           top: ${y}px;
@@ -853,11 +806,11 @@ session_start();
         `;
         
         this.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 600);
+        setTimeout(() => ripple.remove(), 400); // Faster
       });
     });
 
-    // Password toggle functionality with animation
+    // Password toggle functionality with faster animation
     document.getElementById('togglePassword').addEventListener('click', function() {
       const passwordInput = document.getElementById('password');
       const icon = this.querySelector('i');
@@ -866,7 +819,7 @@ session_start();
       this.style.transform = 'translateY(-50%) scale(1.2)';
       setTimeout(() => {
         this.style.transform = 'translateY(-50%) scale(1)';
-      }, 200);
+      }, 150); // Faster
       
       if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
@@ -889,16 +842,16 @@ session_start();
         e.preventDefault();
         // Add shake animation to empty fields
         if (username === '') {
-          document.getElementById('user').style.animation = 'shake 0.5s';
+          document.getElementById('user').style.animation = 'shake 0.3s'; // Faster
           setTimeout(() => {
             document.getElementById('user').style.animation = '';
-          }, 500);
+          }, 300);
         }
         if (password === '') {
-          document.getElementById('password').style.animation = 'shake 0.5s';
+          document.getElementById('password').style.animation = 'shake 0.3s'; // Faster
           setTimeout(() => {
             document.getElementById('password').style.animation = '';
-          }, 500);
+          }, 300);
         }
         return;
       }
@@ -906,13 +859,13 @@ session_start();
       // Show loading animation
       loginBtn.classList.add('loading');
       
-      // Simulate network delay
+      // Simulate network delay (shorter)
       setTimeout(() => {
         loginBtn.classList.remove('loading');
-      }, 2000);
+      }, 1500); // Reduced from 2000ms
     });
 
-    // Add CSS for ripple animation
+    // Add CSS for faster ripple animation
     const style = document.createElement('style');
     style.textContent = `
       @keyframes ripple {
