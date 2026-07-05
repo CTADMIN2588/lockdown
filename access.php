@@ -1,881 +1,317 @@
 <?php
 session_start();
+$status = $_SESSION['status'] ?? null;
+$is_success = $status !== null && stripos($status, 'success') !== false;
+unset($_SESSION['status']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Firewall Login</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --bg-0: #070b16;
+      --bg-1: #0d1628;
+      --card: rgba(20, 28, 46, 0.65);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #eaf0fb;
+      --muted: #8a97b1;
+      --field: rgba(9, 14, 26, 0.7);
+      --field-border: rgba(255, 255, 255, 0.10);
+      --accent: #4f8cff;
+      --accent-2: #7c5cff;
+      --accent-glow: rgba(79, 140, 255, 0.45);
+      --ok: #34d399;
+      --err: #fb7185;
     }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+      font-family: 'Inter', system-ui, sans-serif;
       min-height: 100vh;
       display: flex;
-      justify-content: center;
       align-items: center;
-      padding: 20px;
-      color: #e2e8f0;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .login-container {
-      width: 100%;
-      max-width: 420px;
-      animation: slideUp 0.5s ease-out; /* Faster */
-    }
-
-    .login-card {
-      background: rgba(30, 41, 59, 0.8);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.3),
-        0 1px 0 rgba(255, 255, 255, 0.1) inset,
-        0 -1px 0 rgba(0, 0, 0, 0.5) inset;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transform: translateY(0);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .login-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 
-        0 12px 40px rgba(0, 0, 0, 0.4),
-        0 1px 0 rgba(255, 255, 255, 0.15) inset,
-        0 -1px 0 rgba(0, 0, 0, 0.6) inset;
-    }
-
-    /* Header Section */
-    .login-header {
-      padding: 40px 40px 20px;
-      text-align: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(15, 23, 42, 0.6);
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Floating particles background */
-    .particles {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      z-index: 0;
-    }
-
-    .particle {
-      position: absolute;
-      background: rgba(59, 130, 246, 0.2);
-      border-radius: 50%;
-      animation: float 20s infinite linear;
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-    }
-
-    .particle:nth-child(1) {
-      width: 6px;
-      height: 6px;
-      top: 20%;
-      left: 10%;
-      animation-delay: 0s;
-    }
-
-    .particle:nth-child(2) {
-      width: 4px;
-      height: 4px;
-      top: 60%;
-      left: 80%;
-      animation-delay: -5s;
-    }
-
-    .particle:nth-child(3) {
-      width: 8px;
-      height: 8px;
-      top: 80%;
-      left: 20%;
-      animation-delay: -10s;
-    }
-
-    .particle:nth-child(4) {
-      width: 5px;
-      height: 5px;
-      top: 40%;
-      left: 90%;
-      animation-delay: -15s;
-    }
-
-    /* DBI Logo Container */
-    .dbi-logo-container {
-      position: relative;
-      height: 80px;
-      margin-bottom: 15px;
-      display: flex;
       justify-content: center;
-      align-items: center;
+      padding: 24px;
+      color: var(--text);
+      background: radial-gradient(1200px 800px at 15% -10%, #16233f 0%, transparent 55%),
+                  radial-gradient(1000px 700px at 110% 110%, #241a45 0%, transparent 50%),
+                  linear-gradient(160deg, var(--bg-0), var(--bg-1));
+      overflow: hidden;
+      position: relative;
     }
 
-    /* Enhanced Circle Animation - Faster */
-    .minimal-circle {
-      position: absolute;
-      width: 80px;
-      height: 80px;
+    /* Soft animated aurora blobs */
+    .aurora {
+      position: fixed;
+      inset: -20% -20% auto auto;
+      width: 60vmax;
+      height: 60vmax;
       border-radius: 50%;
-      border: 1.5px solid rgba(59, 130, 246, 0.3);
-      z-index: 1;
-      opacity: 0;
-      animation: circleAppear 0.8s ease-out 0.2s forwards; /* Faster */
-      box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+      filter: blur(90px);
+      opacity: 0.35;
+      pointer-events: none;
+      background: radial-gradient(circle at 30% 30%, var(--accent), transparent 60%);
+      animation: drift 18s ease-in-out infinite alternate;
+    }
+    .aurora.two {
+      inset: auto auto -25% -20%;
+      background: radial-gradient(circle at 60% 60%, var(--accent-2), transparent 60%);
+      animation-duration: 22s;
+      animation-direction: alternate-reverse;
+    }
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(-6%, 8%) scale(1.15); }
     }
 
-    .circle-dot {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      background: linear-gradient(45deg, #3b82f6, #8b5cf6);
-      border-radius: 50%;
-      top: -4px;
-      left: 50%;
-      transform: translateX(-50%);
-      animation: rotateMinimal 6s linear infinite; /* Faster */
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
-    }
-
-    /* DBI Logo with faster animations */
-    .dbi-logo {
-      text-align: center;
+    .card {
       position: relative;
-      z-index: 2;
+      width: 100%;
+      max-width: 400px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 22px;
+      padding: 40px 34px 30px;
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      animation: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    .dbi-main {
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
-      background: linear-gradient(90deg, #e2e8f0, #94a3b8, #e2e8f0);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      opacity: 0;
-      animation: textGlow 0.6s ease-out 0.4s forwards, pulseSoft 3s infinite 1s forwards; /* Faster delays */
-      text-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+    .brand { text-align: center; margin-bottom: 28px; }
+
+    .shield {
+      width: 62px;
+      height: 62px;
+      margin: 0 auto 16px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: linear-gradient(145deg, var(--accent), var(--accent-2));
+      box-shadow: 0 12px 30px -8px var(--accent-glow),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      animation: floaty 4s ease-in-out infinite;
+    }
+    .shield svg { width: 30px; height: 30px; color: #fff; }
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-5px); }
     }
 
-    /* Form Section with faster animations */
-    .login-form {
-      padding: 30px 40px;
-      animation: fadeInForm 0.2s ease-out 0.4s forwards; /* Much faster */
-      opacity: 0;
-    }
+    .brand h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+    .brand p { color: var(--muted); font-size: 13px; margin-top: 5px; }
 
-    .form-title {
-      color: #e2e8f0;
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 24px;
-      text-align: center;
-      position: relative;
-      padding-bottom: 10px;
-    }
+    .field { position: relative; margin-bottom: 18px; }
 
-    .form-title::after {
-      content: '';
+    .field .icon {
       position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60px;
-      height: 2px;
-      background: linear-gradient(to right, transparent, #3b82f6, transparent);
-      animation: lineExpand 0.8s ease-out 1s forwards; /* Faster */
-      transform-origin: center;
-      transform: scaleX(0);
-    }
-
-    /* Faster form group animations */
-    .form-group {
-      margin-bottom: 20px;
-      animation: slideInRight 0.2s ease-out forwards; /* Faster */
-      opacity: 0;
-      transform: translateX(-20px);
-    }
-
-    .form-group:nth-child(1) {
-      animation-delay: 0.2s; /* Much shorter delay */
-    }
-
-    .form-group:nth-child(2) {
-      animation-delay: 0.2s; /* Much shorter delay */
-    }
-
-    .form-label {
-      display: block;
-      color: #cbd5e1;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 6px;
-      transform: translateY(0);
-      transition: transform 0.2s ease, color 0.2s ease; /* Faster transitions */
-    }
-
-    .form-label:hover {
-      transform: translateX(5px);
-      color: #e2e8f0;
-    }
-
-    .input-with-icon {
-      position: relative;
-    }
-
-    .input-icon {
-      position: absolute;
-      left: 14px;
+      left: 15px;
       top: 50%;
       transform: translateY(-50%);
-      color: #64748b;
-      font-size: 16px;
-      transition: all 0.2s ease; /* Faster */
+      width: 18px;
+      height: 18px;
+      color: var(--muted);
+      pointer-events: none;
+      transition: color 0.2s ease;
     }
 
-    .form-control {
+    .field input {
       width: 100%;
-      padding: 12px 12px 12px 42px;
-      border: 1px solid #475569;
-      border-radius: 8px;
-      font-size: 14px;
-      color: #e2e8f0;
-      transition: all 0.2s ease; /* Faster */
-      background: rgba(15, 23, 42, 0.6);
-    }
-
-    .form-control:focus {
+      height: 52px;
+      padding: 0 46px;
+      font-size: 15px;
+      color: var(--text);
+      background: var(--field);
+      border: 1px solid var(--field-border);
+      border-radius: 13px;
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-      transform: translateY(-1px);
-      background: rgba(15, 23, 42, 0.8);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
-
-    .form-control:focus + .input-icon {
-      color: #3b82f6;
-      transform: translateY(-50%) scale(1.1);
-      text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    .field input::placeholder { color: var(--muted); }
+    .field input:focus {
+      border-color: var(--accent);
+      background: rgba(9, 14, 26, 0.9);
+      box-shadow: 0 0 0 4px rgba(79, 140, 255, 0.15);
     }
+    .field input:focus ~ .icon { color: var(--accent); }
 
-    .form-control::placeholder {
-      color: #64748b;
-      transition: color 0.2s ease; /* Faster */
-    }
-
-    .form-control:focus::placeholder {
-      color: #94a3b8;
-    }
-
-    .password-toggle {
+    .toggle {
       position: absolute;
-      right: 14px;
+      right: 12px;
       top: 50%;
       transform: translateY(-50%);
-      background: none;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
       border: none;
-      color: #64748b;
+      background: transparent;
+      color: var(--muted);
       cursor: pointer;
-      font-size: 16px;
-      padding: 0;
-      transition: all 0.2s ease; /* Faster */
+      border-radius: 9px;
+      transition: color 0.2s ease, background 0.2s ease;
     }
+    .toggle:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); }
+    .toggle svg { width: 19px; height: 19px; }
 
-    .password-toggle:hover {
-      color: #3b82f6;
-      transform: translateY(-50%) scale(1.1);
-      text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-    }
-
-    /* Faster button animation */
-    .login-btn {
+    .btn {
+      position: relative;
       width: 100%;
-      background: linear-gradient(90deg, #3b82f6, #2563eb);
-      color: white;
+      height: 52px;
+      margin-top: 6px;
       border: none;
-      padding: 14px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
+      border-radius: 13px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
       cursor: pointer;
       display: flex;
-      justify-content: center;
       align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease; /* Faster */
-      position: relative;
-      overflow: hidden;
-      animation: slideInUp 0.2s ease-out 0.4s forwards; /* Faster with shorter delay */
-      opacity: 0;
-      transform: translateY(20px);
-      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+      justify-content: center;
+      gap: 9px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 14px 30px -10px var(--accent-glow);
+      transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
     }
-
-    .login-btn:hover {
-      background: linear-gradient(90deg, #2563eb, #1d4ed8);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
-    }
-
-    .login-btn:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3);
-    }
-
-    /* Shine effect with faster animation */
-    .login-btn::after {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(
-        to right,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.1) 50%,
-        rgba(255, 255, 255, 0) 100%
-      );
-      transform: rotate(30deg);
-      transition: transform 0.4s; /* Faster */
-      opacity: 0;
-    }
-
-    .login-btn:hover::after {
-      opacity: 1;
-      transform: rotate(30deg) translateX(100%);
-    }
-
-    .btn-loader {
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.07); box-shadow: 0 18px 38px -10px var(--accent-glow); }
+    .btn:active { transform: translateY(0); }
+    .btn .btn-label { display: flex; align-items: center; gap: 9px; }
+    .btn svg { width: 18px; height: 18px; }
+    .btn.loading { pointer-events: none; }
+    .btn.loading .btn-label { visibility: hidden; }
+    .btn .spinner {
       display: none;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 0.8s linear infinite; /* Faster */
-    }
-
-    .login-btn.loading .btn-text {
-      visibility: hidden;
-    }
-
-    .login-btn.loading .btn-loader {
-      display: block;
       position: absolute;
+      width: 20px; height: 20px;
+      border: 2.5px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
     }
+    .btn.loading .spinner { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Enhanced Status Message */
-    .status-message {
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin: 16px 0;
+    .alert {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 13px;
-      animation: shake 0.4s ease-out; /* Faster */
-      transform-origin: center;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 20px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 13.5px;
+      font-weight: 500;
+      border: 1px solid transparent;
+      animation: rise 0.35s ease;
     }
+    .alert svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .alert.error   { color: var(--err); background: rgba(251, 113, 133, 0.10); border-color: rgba(251, 113, 133, 0.25); }
+    .alert.success { color: var(--ok);  background: rgba(52, 211, 153, 0.10); border-color: rgba(52, 211, 153, 0.25); }
 
-    .status-message.error {
-      color: #fca5a5;
-      border-color: rgba(220, 38, 38, 0.3);
-      box-shadow: 0 0 15px rgba(220, 38, 38, 0.2);
-    }
-
-    .status-message.success {
-      color: #86efac;
-      border-color: rgba(34, 197, 94, 0.3);
-      box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
-      animation: bounceIn 0.5s ease-out; /* Faster */
-    }
-
-    .status-message i {
-      font-size: 16px;
-    }
-
-    /* Footer with faster animation */
-    .login-footer {
+    .foot {
+      margin-top: 24px;
       text-align: center;
-      padding: 20px 40px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
       font-size: 12px;
-      animation: fadeIn 0.6s ease-out 1.8s forwards; /* Faster with shorter delay */
-      opacity: 0;
-      background: rgba(15, 23, 42, 0.6);
+      color: var(--muted);
     }
 
-    .copyright {
-      opacity: 0.7;
-      transition: opacity 0.2s ease, color 0.2s ease; /* Faster */
-    }
-
-    .copyright:hover {
-      opacity: 1;
-      color: #cbd5e1;
-    }
-
-    /* Animation Keyframes - Faster durations */
-    @keyframes gradientShift {
-      0%, 100% {
-        transform: scale(1) rotate(0deg);
-      }
-      25% {
-        transform: scale(1.05) rotate(5deg);
-      }
-      50% {
-        transform: scale(1) rotate(0deg);
-      }
-      75% {
-        transform: scale(1.05) rotate(-5deg);
-      }
-    }
-
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes float {
-      0%, 100% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 0.6;
-      }
-      25% {
-        transform: translateY(-15px) rotate(90deg);
-        opacity: 0.8;
-      }
-      50% {
-        transform: translateY(0) rotate(180deg);
-        opacity: 0.6;
-      }
-      75% {
-        transform: translateY(15px) rotate(270deg);
-        opacity: 0.8;
-      }
-    }
-
-    @keyframes circleAppear {
-      0% {
-        opacity: 0;
-        transform: scale(0.8) rotate(-180deg);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1) rotate(0);
-      }
-    }
-
-    @keyframes rotateMinimal {
-      0% {
-        transform: translateX(-50%) rotate(0deg) translateY(40px) rotate(0deg);
-      }
-      100% {
-        transform: translateX(-50%) rotate(360deg) translateY(40px) rotate(-360deg);
-      }
-    }
-
-    @keyframes textGlow {
-      0% {
-        opacity: 0;
-        transform: translateY(10px);
-        filter: blur(5px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-        filter: blur(0);
-      }
-    }
-
-    @keyframes textAppear {
-      from {
-        opacity: 0;
-        transform: translateY(5px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes floatSubtitle {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-3px);
-      }
-    }
-
-    @keyframes pulseSoft {
-      0%, 100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.9;
-      }
-    }
-
-    @keyframes fadeInForm {
-      to {
-        opacity: 1;
-      }
-    }
-
-    @keyframes lineExpand {
-      to {
-        transform: translateX(-50%) scaleX(1);
-      }
-    }
-
-    @keyframes slideInRight {
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-
-    @keyframes slideInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    @keyframes fadeIn {
-      to {
-        opacity: 1;
-      }
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-      20%, 40%, 60%, 80% { transform: translateX(5px); }
-    }
-
-    @keyframes bounceIn {
-      0% { 
-        transform: scale(0.3); 
-        opacity: 0; 
-      }
-      50% { 
-        transform: scale(1.05); 
-      }
-      70% { 
-        transform: scale(0.9); 
-      }
-      100% { 
-        transform: scale(1); 
-        opacity: 1; 
-      }
-    }
-
-    /* Responsive Design */
-    @media (max-width: 480px) {
-      .login-card {
-        border-radius: 14px;
-      }
-
-      .login-header {
-        padding: 30px 20px 15px;
-      }
-
-      .login-form {
-        padding: 25px 20px;
-      }
-
-      .dbi-main {
-        font-size: 22px;
-      }
-
-      .minimal-circle {
-        width: 70px;
-        height: 70px;
-      }
-
-      .login-footer {
-        padding: 15px 20px;
-      }
+    @media (max-width: 440px) {
+      .card { padding: 32px 22px 24px; border-radius: 18px; }
     }
   </style>
 </head>
 <body>
-  <div class="login-container">
-    <div class="login-card">
-      <!-- Header Section -->
-      <div class="login-header">
-        <!-- Floating particles -->
-        <div class="particles">
-          <div class="particle"></div>
-          <div class="particle"></div>
-          <div class="particle"></div>
-          <div class="particle"></div>
-        </div>
-        
-        <div class="dbi-logo-container">
-          <!-- Minimal Circle Animation -->
-          <div class="minimal-circle">
-            <div class="circle-dot"></div>
-          </div>
-          
-          <!-- DBI Logo -->
-          <div class="dbi-logo">
-            <div class="dbi-main">Firewall Login</div>
-          </div>
-        </div>
+  <div class="aurora"></div>
+  <div class="aurora two"></div>
+
+  <main class="card">
+    <div class="brand">
+      <div class="shield">
+        <!-- shield-lock icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3l7 3v5c0 4.5-3 7.9-7 9-4-1.1-7-4.5-7-9V6l7-3z"/>
+          <path d="M9.5 12h5v3.5h-5z"/>
+          <path d="M10.5 12v-1.2a1.5 1.5 0 0 1 3 0V12"/>
+        </svg>
       </div>
-
-      <!-- Form Section -->
-      <div class="login-form">
-        <form action="inc/code.php" method="post" id="loginForm">
-          <!-- Username Field -->
-          <div class="form-group">
-            <label class="form-label" for="user">Username</label>
-            <div class="input-with-icon">
-              <i class="fas fa-user input-icon"></i>
-              <input 
-                type="text" 
-                id="user" 
-                name="user" 
-                class="form-control" 
-                placeholder="Enter your username" 
-                required
-              >
-            </div>
-          </div>
-
-          <!-- Password Field -->
-          <div class="form-group">
-            <label class="form-label" for="password">Password</label>
-            <div class="input-with-icon">
-              <i class="fas fa-lock input-icon"></i>
-              <input 
-                type="password" 
-                id="password" 
-                name="password" 
-                class="form-control" 
-                placeholder="Enter your password" 
-                required
-              >
-              <button type="button" class="password-toggle" id="togglePassword">
-                <i class="fas fa-eye"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- Submit Button -->
-          <button type="submit" name="submit" class="login-btn">
-            <span class="btn-text">
-              <i class="fas fa-sign-in-alt"></i>
-              Sign In
-            </span>
-            <div class="btn-loader"></div>
-          </button>
-
-          <!-- Status Message -->
-          <?php if(isset($_SESSION['status'])): ?>
-            <div class="status-message <?php echo strpos($_SESSION['status'], 'success') !== false ? 'success' : 'error'; ?>">
-              <i class="fas <?php echo strpos($_SESSION['status'], 'success') !== false ? 'fa-check-circle' : 'fa-exclamation-circle'; ?>"></i>
-              <p><?php echo $_SESSION['status']; ?></p>
-            </div>
-          <?php 
-            unset($_SESSION['status']);
-            endif; 
-          ?>
-        </form>
-      </div>
+      <h1>Firewall Login</h1>
+      <p>Sign in to authorize your access</p>
     </div>
-  </div>
+
+    <?php if ($status !== null): ?>
+      <div class="alert <?php echo $is_success ? 'success' : 'error'; ?>">
+        <?php if ($is_success): ?>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        <?php else: ?>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        <?php endif; ?>
+        <span><?php echo htmlspecialchars($status, ENT_QUOTES); ?></span>
+      </div>
+    <?php endif; ?>
+
+    <form action="inc/code.php" method="post" id="loginForm" novalidate>
+      <div class="field">
+        <input type="text" id="user" name="user" placeholder="Username" autocomplete="username" required>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+
+      <div class="field">
+        <input type="password" id="password" name="password" placeholder="Password" autocomplete="current-password" required>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <button type="button" class="toggle" id="togglePassword" aria-label="Show password">
+          <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+
+      <button type="submit" name="submit" class="btn" id="submitBtn">
+        <span class="btn-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg>
+          Sign In
+        </span>
+        <span class="spinner"></span>
+      </button>
+    </form>
+
+    <div class="foot">Protected access &middot; Authorized users only</div>
+  </main>
 
   <script>
-    // Enhanced animations on page load - Faster
-    document.addEventListener('DOMContentLoaded', function() {
-      // Auto-focus on username field with much shorter delay
-      setTimeout(() => {
-        document.getElementById('user').focus();
-      }, 800); // Reduced from 2000ms to 800ms
-      
-      // Restart circle animation
-      const minimalCircle = document.querySelector('.minimal-circle');
-      minimalCircle.style.animation = 'none';
-      setTimeout(() => {
-        minimalCircle.style.animation = 'circleAppear 0.8s ease-out 0.2s forwards';
-      }, 10);
-      
-      // Add typing effect to inputs on focus
-      const inputs = document.querySelectorAll('.form-control');
-      inputs.forEach((input, index) => {
-        // Add focus effects
-        input.addEventListener('focus', function() {
-          this.parentElement.querySelector('.input-icon').style.color = '#3b82f6';
-          this.style.animation = 'none';
-          setTimeout(() => {
-            this.style.animation = 'pulseSoft 1.5s infinite'; // Faster
-          }, 10);
-        });
-        
-        input.addEventListener('blur', function() {
-          this.parentElement.querySelector('.input-icon').style.color = '#64748b';
-          this.style.animation = 'none';
-        });
-        
-        // Add click ripple effect
-        input.addEventListener('click', function(e) {
-          const ripple = document.createElement('span');
-          const rect = this.getBoundingClientRect();
-          const size = Math.max(rect.width, rect.height);
-          const x = e.clientX - rect.left - size / 2;
-          const y = e.clientY - rect.top - size / 2;
-          
-          ripple.style.cssText = `
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(59, 130, 246, 0.3);
-            transform: scale(0);
-            animation: ripple 0.4s linear; /* Faster */
-            width: ${size}px;
-            height: ${size}px;
-            top: ${y}px;
-            left: ${x}px;
-            pointer-events: none;
-          `;
-          
-          this.appendChild(ripple);
-          setTimeout(() => ripple.remove(), 400); // Faster
-        });
-      });
-      
-      // Add ripple effect to login button
-      const loginBtn = document.querySelector('.login-btn');
-      loginBtn.addEventListener('click', function(e) {
-        if (this.classList.contains('loading')) return;
-        
-        const ripple = document.createElement('span');
-        const rect = this.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height);
-        const x = e.clientX - rect.left - size / 2;
-        const y = e.clientY - rect.top - size / 2;
-        
-        ripple.style.cssText = `
-          position: absolute;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.4);
-          transform: scale(0);
-          animation: ripple 0.4s linear; /* Faster */
-          width: ${size}px;
-          height: ${size}px;
-          top: ${y}px;
-          left: ${x}px;
-          pointer-events: none;
-        `;
-        
-        this.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 400); // Faster
-      });
+    // Password visibility toggle
+    const eyeOpen = '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>';
+    const eyeOff  = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/>';
+    const pwd = document.getElementById('password');
+    const eye = document.getElementById('eyeIcon');
+    document.getElementById('togglePassword').addEventListener('click', function () {
+      const show = pwd.type === 'password';
+      pwd.type = show ? 'text' : 'password';
+      eye.innerHTML = show ? eyeOff : eyeOpen;
+      this.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
     });
 
-    // Password toggle functionality with faster animation
-    document.getElementById('togglePassword').addEventListener('click', function() {
-      const passwordInput = document.getElementById('password');
-      const icon = this.querySelector('i');
-      
-      // Add bounce animation
-      this.style.transform = 'translateY(-50%) scale(1.2)';
-      setTimeout(() => {
-        this.style.transform = 'translateY(-50%) scale(1)';
-      }, 150); // Faster
-      
-      if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-      } else {
-        passwordInput.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-      }
-    });
-
-    // Form validation and loading animation
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      const username = document.getElementById('user').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const loginBtn = document.querySelector('.login-btn');
-      
-      if (username === '' || password === '') {
+    // Lightweight client-side guard + loading state
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      const u = document.getElementById('user');
+      const p = document.getElementById('password');
+      if (!u.value.trim() || !p.value.trim()) {
         e.preventDefault();
-        // Add shake animation to empty fields
-        if (username === '') {
-          document.getElementById('user').style.animation = 'shake 0.3s'; // Faster
-          setTimeout(() => {
-            document.getElementById('user').style.animation = '';
-          }, 300);
-        }
-        if (password === '') {
-          document.getElementById('password').style.animation = 'shake 0.3s'; // Faster
-          setTimeout(() => {
-            document.getElementById('password').style.animation = '';
-          }, 300);
-        }
+        (!u.value.trim() ? u : p).focus();
         return;
       }
-      
-      // Show loading animation
-      loginBtn.classList.add('loading');
-      
-      // Simulate network delay (shorter)
-      setTimeout(() => {
-        loginBtn.classList.remove('loading');
-      }, 1500); // Reduced from 2000ms
+      document.getElementById('submitBtn').classList.add('loading');
     });
 
-    // Add CSS for faster ripple animation
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes ripple {
-        to {
-          transform: scale(4);
-          opacity: 0;
-        }
-      }
-    `;
-    document.head.appendChild(style);
+    window.addEventListener('load', () => document.getElementById('user').focus());
   </script>
 </body>
 </html>
