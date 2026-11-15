@@ -1,0 +1,4 @@
+# The shell scripts run on Linux: keep LF line endings even when checked out on Windows.
+scripts/* text eol=lf
+*.php     text eol=lf
+*.woff2   binary
