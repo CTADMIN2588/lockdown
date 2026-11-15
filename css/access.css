@@ -1,0 +1,106 @@
+/* Vicidial Secure Access: styles for access.php.
+   Fonts are served from this folder; nothing is loaded from the internet. */
+
+@font-face{font-family:"Inter";src:url("../fonts/inter.woff2") format("woff2");font-weight:100 900;font-display:swap}
+@font-face{font-family:"Josefin Sans";src:url("../fonts/josefin-sans.woff2") format("woff2");font-weight:100 700;font-display:swap}
+
+:root{
+  --font-ui:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-head:"Josefin Sans","Inter",system-ui,sans-serif;
+  --bg:#0c111d;--card:#131c30;--field:#0b1120;--line:#243049;
+  --text:#eef2fa;--muted:#9aa7c2;--dim:#6c7a98;
+  --accent:#3b82f6;--err:#fb7185;--warn:#fbbf24;
+  /* status colour: red until this IP is allowed (body.off), green once it is (body.on) */
+  --st:#fb7185;--hero-top:#4a2a38;--hero-bottom:#1f1925;--st-soft:rgba(251,113,133,.14);
+  color-scheme:dark;
+}
+body.on{--st:#34d399;--hero-top:#16433d;--hero-bottom:#0f2127;--st-soft:rgba(52,211,153,.14)}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}        /* no font boosting when a phone is rotated */
+body{
+  font-family:var(--font-ui);color:var(--text);background:var(--bg);line-height:1.45;
+  min-height:100vh;min-height:100dvh;                             /* dvh: no jump when mobile browser bars hide */
+  display:flex;flex-direction:column;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  -webkit-tap-highlight-color:transparent;
+}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}                 /* no double-tap delay */
+.num{font-variant-numeric:tabular-nums}
+/* Josefin Sans sits high in its line and has wide word gaps; both are corrected here */
+.h{font-family:var(--font-head);word-spacing:-.07em;letter-spacing:0;padding-top:3px}
+
+/* ---------- status block ---------- */
+.hero{
+  text-align:center;
+  padding:max(34px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) 74px max(20px,env(safe-area-inset-left));
+  background:linear-gradient(180deg,var(--hero-top),var(--hero-bottom));
+}
+.hero h1{font-size:20px;font-weight:700;color:#fff}
+.hero .ip{display:block;font-size:40px;font-weight:600;line-height:1.2;color:var(--st);margin-top:16px;overflow-wrap:anywhere}
+.hero .status{font-size:13px;font-weight:500;color:#fff;opacity:.85;margin-top:6px}
+
+/* ---------- card ---------- */
+.stage{flex:1;display:flex;flex-direction:column;align-items:center;padding:0 max(16px,env(safe-area-inset-right)) 28px max(16px,env(safe-area-inset-left))}
+.card{width:100%;max-width:380px;margin-top:-46px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 22px 24px;box-shadow:0 30px 60px -30px rgba(0,0,0,.9)}
+.card h2.t{font-size:19px;font-weight:700;margin-bottom:14px}
+
+.msg{font-size:13px;font-weight:500;line-height:1.45;margin:-4px 0 14px}
+.msg.err{color:var(--err)}
+.msg.warn{color:var(--warn)}
+
+label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px}
+.field{position:relative;margin-bottom:14px}
+.field input{
+  width:100%;height:48px;padding:0 14px;
+  font-size:16px;                                                 /* 16px or more stops iPhone Safari zooming on focus */
+  color:var(--text);background:var(--field);border:1px solid var(--line);border-radius:10px;outline:none;
+  -webkit-appearance:none;appearance:none;
+}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.2)}
+.field input:-webkit-autofill{-webkit-text-fill-color:var(--text);box-shadow:0 0 0 100px var(--field) inset;caret-color:var(--text)}
+.field.pw input{padding-right:72px}
+.reveal{position:absolute;right:2px;bottom:2px;height:44px;min-width:60px;padding:0 10px;font-size:12px;font-weight:600;color:var(--muted);background:transparent;border:0;border-radius:8px}
+.reveal:hover{color:var(--text)}
+.btn{display:block;width:100%;min-height:50px;margin-top:6px;padding:4px 16px 0;border:0;border-radius:10px;font-family:var(--font-head);font-size:16px;font-weight:700;word-spacing:-.07em;color:#fff;background:var(--accent)}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.4;cursor:not-allowed;filter:none}
+.reveal:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.note{font-size:12px;color:var(--dim);text-align:center;margin-top:14px}
+
+/* ---------- access granted ---------- */
+.ok{text-align:center}
+.tick{width:52px;height:52px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;color:var(--st);background:var(--st-soft)}
+.tick svg{width:26px;height:26px}
+.ok h2{font-size:22px;font-weight:700}
+.facts{margin-top:16px;text-align:left}
+.facts div{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--line);font-size:13px}
+.facts span:first-child{color:var(--muted)}
+.facts span:last-child{font-weight:500;text-align:right;overflow-wrap:anywhere}
+.redir{font-size:13px;color:var(--muted);margin-top:18px}
+.bar{height:4px;border-radius:999px;overflow:hidden;background:var(--line);margin-top:10px}
+.bar span{display:block;height:100%;width:100%;background:var(--st);transform-origin:left;animation:fill 3s linear both}
+@keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+/* ---------- footer ---------- */
+.foot{display:flex;flex-wrap:wrap;justify-content:center;font-size:12px;color:var(--dim);padding:0 16px max(18px,env(safe-area-inset-bottom))}
+.foot>span{white-space:nowrap}
+.foot>span+span::before{content:"\00b7";margin:0 8px}
+
+/* ---------- phones ---------- */
+@media (max-width:440px){
+  .hero .ip{font-size:32px}
+  .stage{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));padding-bottom:22px}
+  .card{padding-left:16px;padding-right:16px}
+  .foot{flex-direction:column;align-items:center}
+  .foot>span+span::before{display:none}
+}
+/* a phone held sideways: less height for the status block */
+@media (max-height:500px) and (orientation:landscape){
+  .hero{padding-top:max(16px,env(safe-area-inset-top));padding-bottom:62px}
+  .hero .ip{font-size:28px;margin-top:6px}
+}
+@media (prefers-reduced-motion:reduce){
+  .bar span{animation:none}
+}

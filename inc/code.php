@@ -1,47 +1,65 @@
 <?php
-session_start();
-include 'dbconnect.php';
-if (isset($_POST['submit'])) {
-  $user = $_POST['user'];
-  $password = $_POST['password'];
+// Login handler for access.php. Checks the VICIdial login, then whitelists the caller's IP.
+// Always answers with a redirect back to access.php; that page shows the result.
 
-  $login_query = mysqli_query($asterisk_conn, "SELECT * FROM vicidial_users WHERE user = '$user' AND pass = '$password'");
-  $rowexists = mysqli_num_rows($login_query);
-  if ($rowexists > 0) {
-    foreach ($login_query as $row) {
-      $user_name = $row['user'];
-      $user_pass = $row['pass'];
-      $user_group = $row['user_group'];
+require __DIR__ . '/lib.php';
+ld_session_start();
+ld_security_headers();
 
-      $_SESSION['auth'] = true;
-      $_SESSION['auth_user'] = [
-        'user' => $user_name,
-        'pass' => $user_pass,
-        'user_group' => $user_group,
-      ];
-
-      $hostname = gethostname();
-      $system_ip = $_SERVER['REMOTE_ADDR'];
-
-      exec("sudo firewall-cmd --zone=trusted --add-source=$system_ip 2>&1", $exec_cmd, $value);
-
-      $url = "http://$hostname:81/connecter.php?ip_address=$system_ip";
-      $ch = curl_init($url);
-      $response = curl_exec($ch);
-      curl_close($ch);
-
-      if ($value == 0) {
-        header("Location: https://$hostname/vicidial/welcome.php");
-      } else {
-        $_SESSION['status'] = "Invalid Credentials.";
-        header('Location: ../access.php');
-      }
+function ld_back($flash)
+{
+    if ($flash !== '') {
+        $_SESSION['flash'] = $flash;
     }
-  } else {
-    $_SESSION['status'] = "Invalid Credentials.";
     header('Location: ../access.php');
-  }
-} else {
-  $_SESSION['status'] = "Invalid Credentials.";
-  header('Location: ../access.php');
+    exit;
 }
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    ld_back('');
+}
+
+$ip = ld_client_ip();
+if ($ip === '') {
+    ld_back('noip');
+}
+if (!ld_csrf_ok(isset($_POST['csrf']) ? $_POST['csrf'] : null)) {
+    ld_back('expired');
+}
+
+// Locked out: do not even look at the password.
+$attempts = ld_attempts($ip);
+if ($attempts['locked_for'] > 0) {
+    ld_back('');
+}
+
+$user = isset($_POST['user']) && is_string($_POST['user']) ? trim($_POST['user']) : '';
+$pass = isset($_POST['password']) && is_string($_POST['password']) ? $_POST['password'] : '';
+
+$login = ld_check_login($user, $pass);
+if ($login === null) {
+    ld_back('unavailable');
+}
+if ($login === false) {
+    ld_attempt_fail($ip);
+    ld_log('failed login from ' . $ip . ' as "' . preg_replace('/[^A-Za-z0-9_-]/', '?', substr($user, 0, 20)) . '"');
+    ld_back('bad_login');
+}
+
+// Correct login.
+ld_attempt_clear($ip);
+session_regenerate_id(true);
+
+if (!ld_allow_ip($ip, $login)) {
+    ld_back('firewall');
+}
+$unreached = ld_notify_peers($ip, $login);
+ld_log('allowed ' . $ip . ' for ' . $login . ($unreached ? ' (' . $unreached . ' cluster server(s) not reached)' : ''));
+
+$state = ld_allow_state($ip);
+$_SESSION['granted'] = array(
+    'user'    => $login,
+    'expires' => $state['expires'],
+    'at'      => time(),
+);
+ld_back('');
