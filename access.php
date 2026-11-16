@@ -101,7 +101,7 @@ $renew    = $state['allowed'];
       <div class="bar"><span></span></div>
     </div>
 <?php else: ?>
-    <h2 class="t h"><?php echo $renew ? 'Log in again to extend your access' : 'Log in to whitelist your IP address'; ?></h2>
+    <h2 class="t h"><?php echo $renew ? 'Log in again to extend your access' : 'Sign in to authorize your access'; ?></h2>
 <?php if ($locked): ?>
     <p class="msg warn" role="alert">Too many failed tries from this IP. Try again in <span class="num" id="lock" data-seconds="<?php echo (int) $tries['locked_for']; ?>"><?php echo sprintf('%d:%02d', floor($tries['locked_for'] / 60), $tries['locked_for'] % 60); ?></span>.</p>
 <?php elseif ($message !== ''): ?>
@@ -110,13 +110,15 @@ $renew    = $state['allowed'];
     <form action="inc/code.php" method="post" id="login">
       <input type="hidden" name="csrf" value="<?php echo ld_e(ld_csrf_token()); ?>">
       <div class="field">
-        <label for="user">Username</label>
-        <input id="user" name="user" type="text" maxlength="20" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" required>
+        <label class="sr" for="user">Username</label>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <input id="user" name="user" type="text" placeholder="Username" maxlength="20" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" required>
       </div>
       <div class="field pw">
-        <label for="password">Password</label>
-        <input id="password" name="password" type="password" maxlength="100" autocomplete="current-password" enterkeyhint="go" required>
-        <button type="button" class="reveal" id="reveal" aria-label="Show password">Show</button>
+        <label class="sr" for="password">Password</label>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <input id="password" name="password" type="password" placeholder="Password" maxlength="100" autocomplete="current-password" enterkeyhint="go" required>
+        <button type="button" class="reveal" id="reveal" aria-label="Show password"><svg class="eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button>
       </div>
       <button class="btn" type="submit"<?php echo ($locked || $ip === '') ? ' disabled' : ''; ?>><?php echo $renew ? 'Renew for ' . (int) $config['allow_days'] . ' days' : 'Sign in and allow'; ?></button>
     </form>

@@ -44,25 +44,33 @@ button{cursor:pointer;touch-action:manipulation}                 /* no double-ta
 /* ---------- card ---------- */
 .stage{flex:1;display:flex;flex-direction:column;align-items:center;padding:0 max(16px,env(safe-area-inset-right)) 28px max(16px,env(safe-area-inset-left))}
 .card{width:100%;max-width:380px;margin-top:-46px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 22px 24px;box-shadow:0 30px 60px -30px rgba(0,0,0,.9)}
-.card h2.t{font-size:19px;font-weight:700;margin-bottom:14px}
+.card h2.t{font-size:19px;font-weight:700;margin-bottom:14px;text-align:center}
 
 .msg{font-size:13px;font-weight:500;line-height:1.45;margin:-4px 0 14px}
 .msg.err{color:var(--err)}
 .msg.warn{color:var(--warn)}
 
-label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px}
+/* labels stay for screen readers; the placeholder and icon show the meaning on screen */
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .field{position:relative;margin-bottom:14px}
+.field .ico{position:absolute;left:16px;top:50%;width:20px;height:20px;margin-top:-10px;pointer-events:none;
+  fill:none;stroke:var(--muted);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .field input{
-  width:100%;height:48px;padding:0 14px;
+  width:100%;height:52px;padding:0 14px 0 48px;border-radius:12px;
   font-size:16px;                                                 /* 16px or more stops iPhone Safari zooming on focus */
-  color:var(--text);background:var(--field);border:1px solid var(--line);border-radius:10px;outline:none;
+  color:var(--text);background:var(--field);border:1px solid var(--line);outline:none;
   -webkit-appearance:none;appearance:none;
 }
+.field input::placeholder{color:var(--muted);opacity:1}
 .field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.2)}
+.field:focus-within .ico{stroke:var(--text)}
 .field input:-webkit-autofill{-webkit-text-fill-color:var(--text);box-shadow:0 0 0 100px var(--field) inset;caret-color:var(--text)}
-.field.pw input{padding-right:72px}
-.reveal{position:absolute;right:2px;bottom:2px;height:44px;min-width:60px;padding:0 10px;font-size:12px;font-weight:600;color:var(--muted);background:transparent;border:0;border-radius:8px}
-.reveal:hover{color:var(--text)}
+.field.pw input{padding-right:56px}
+.reveal{position:absolute;right:4px;top:4px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:transparent;border:0;border-radius:8px}
+.reveal svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.reveal:hover svg{stroke:var(--text)}
+.reveal .eye-off,.reveal.on .eye{display:none}
+.reveal.on .eye-off{display:block}
 .btn{display:block;width:100%;min-height:50px;margin-top:6px;padding:4px 16px 0;border:0;border-radius:10px;font-family:var(--font-head);font-size:16px;font-weight:700;word-spacing:-.07em;color:#fff;background:var(--accent)}
 .btn:hover{filter:brightness(1.08)}
 .btn:disabled{opacity:.4;cursor:not-allowed;filter:none}

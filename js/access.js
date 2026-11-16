@@ -9,7 +9,7 @@
     reveal.addEventListener('click', function () {
       var show = password.type === 'password';
       password.type = show ? 'text' : 'password';
-      reveal.textContent = show ? 'Hide' : 'Show';
+      reveal.className = show ? 'reveal on' : 'reveal';
       reveal.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
     });
   }
