@@ -19,13 +19,13 @@ Run every command as root. Do all of it on **every** server in the cluster.
 
 ## 1. Web files
 
-Copy the folder to the web root where the old version is (keep a backup of the old folder first).
+Copy the folder to `/var/www/lockdown` (keep a backup of the old folder first). The commands below assume that path.
 
 ## 2. Root helper scripts
 
 ```bash
-install -o root -g root -m 755 scripts/lockdown-allow  /usr/local/sbin/lockdown-allow
-install -o root -g root -m 755 scripts/lockdown-expire /usr/local/sbin/lockdown-expire
+install -o root -g root -m 755 /var/www/lockdown/scripts/lockdown-allow  /usr/local/sbin/lockdown-allow
+install -o root -g root -m 755 /var/www/lockdown/scripts/lockdown-expire /usr/local/sbin/lockdown-expire
 ```
 
 ## 3. Data folder
@@ -83,7 +83,7 @@ The web server user must be able to read `/etc/astguiclient.conf` (it already ca
    chmod 640 /etc/lockdown.key
    ```
 
-2. On each server, edit `inc/config.php`:
+2. On each server, edit `/var/www/lockdown/inc/config.php`:
    - `peers`: the `connecter.php` address of every **other** server.
    - `peer_ips`: the IP addresses the **other** servers call from.
 
