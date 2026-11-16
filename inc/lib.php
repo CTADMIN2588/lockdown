@@ -86,36 +86,7 @@ function ld_client_ip()
 
 // ---------------------------------------------------------------- database / login
 
-function ld_db()
-{
-    $config = ld_config();
-    $lines = @file($config['conf_file'], FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    if ($lines === false) {
-        ld_log('cannot read ' . $config['conf_file']);
-        return null;
-    }
-    $conf = array();
-    foreach ($lines as $line) {
-        if (preg_match('/^(VARDB_\w+)\s*=>\s*(.*)$/', trim($line), $m)) {
-            $conf[$m[1]] = trim($m[2]);
-        }
-    }
-    foreach (array('VARDB_server', 'VARDB_database', 'VARDB_user', 'VARDB_pass') as $key) {
-        if (!isset($conf[$key])) {
-            ld_log('missing ' . $key . ' in ' . $config['conf_file']);
-            return null;
-        }
-    }
-    mysqli_report(MYSQLI_REPORT_OFF);
-    $port = isset($conf['VARDB_port']) ? (int) $conf['VARDB_port'] : 3306;
-    $db = @mysqli_connect($conf['VARDB_server'], $conf['VARDB_user'], $conf['VARDB_pass'], $conf['VARDB_database'], $port);
-    if (!$db) {
-        ld_log('database connection failed: ' . mysqli_connect_error());
-        return null;
-    }
-    mysqli_set_charset($db, 'utf8');
-    return $db;
-}
+require __DIR__ . '/dbconnect.php';   // ld_db()
 
 // VICIdial's own hash of a password (used when pass_hash_enabled = 1). Empty string on failure.
 function ld_bp_hash($pass)
@@ -254,24 +225,74 @@ function ld_allow_state($ip)
     return $none;
 }
 
-// Adds the IP to the firewall through the root helper. True on success.
+// Runs firewall-cmd as root through sudo, like the old version did. Every argument is escaped.
+// Returns the exit code; $out receives the output lines.
+function ld_fw($args, &$out = null)
+{
+    $cmd = 'sudo -n /usr/bin/firewall-cmd';
+    foreach ($args as $arg) {
+        $cmd .= ' ' . escapeshellarg($arg);
+    }
+    $out = array();
+    $code = 1;
+    exec($cmd . ' 2>&1', $out, $code);
+    return (int) $code;
+}
+
+// Adds the IP to the firewalld "trusted" zone, now and after a reboot, and records when it
+// expires (scripts/expire.sh removes it then). An IP an admin already put in the zone by hand
+// is recorded with no expiry, so it is never removed. True on success.
 function ld_allow_ip($ip, $user)
 {
     $config = ld_config();
+    // One single address only: filter_var refuses ranges, so 0.0.0.0/0 can never get in.
     if (!ld_valid_ip($ip) || !preg_match('/^[A-Za-z0-9_-]{1,20}$/', $user)) {
         return false;
     }
-    $cmd = 'sudo -n ' . escapeshellarg($config['allow_cmd'])
-         . ' ' . escapeshellarg($ip)
-         . ' ' . escapeshellarg($user)
-         . ' ' . (int) $config['allow_days'] . ' 2>&1';
-    $out = array();
-    $code = 1;
-    exec($cmd, $out, $code);
-    if ($code !== 0) {
-        ld_log('firewall helper failed (' . $code . ') for ' . $ip . ': ' . implode(' | ', $out));
+    $list = $config['data_dir'] . '/allowed.list';
+    $lock = @fopen($config['data_dir'] . '/.allowed.lock', 'c');
+    if (!$lock || !flock($lock, LOCK_EX)) {
+        ld_log('cannot lock ' . $config['data_dir'] . '/.allowed.lock (run setup.sh)');
         return false;
     }
+
+    // What the allow list already says about this IP: null = not listed, 0 = no expiry.
+    $keep = array();
+    $listed = null;
+    $lines = @file($list, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines ? $lines : array() as $line) {
+        $parts = explode(' ', trim($line));
+        if ($parts[0] === $ip) {
+            $listed = isset($parts[1]) ? (int) $parts[1] : 0;
+        } else {
+            $keep[] = trim($line);
+        }
+    }
+
+    $out = array();
+    $permanent = (ld_fw(array('--permanent', '--zone=trusted', '--query-source=' . $ip)) === 0);
+    $ok = ld_fw(array('--zone=trusted', '--query-source=' . $ip)) === 0
+       || ld_fw(array('--zone=trusted', '--add-source=' . $ip), $out) === 0;
+    if ($ok && !$permanent) {
+        $ok = ld_fw(array('--permanent', '--zone=trusted', '--add-source=' . $ip), $out) === 0;
+    }
+    if (!$ok) {
+        ld_log('firewall-cmd failed for ' . $ip . ': ' . implode(' | ', $out));
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        return false;
+    }
+
+    $expires = time() + (int) $config['allow_days'] * 86400;
+    if ($listed === 0 || ($listed === null && $permanent)) {
+        $expires = 0;   // put there by an admin: never expires
+    }
+    $keep[] = $ip . ' ' . $expires . ' ' . $user;
+    if (@file_put_contents($list, implode("\n", $keep) . "\n") === false) {
+        ld_log('cannot write ' . $list . ' (run setup.sh); ' . $ip . ' is allowed but will not expire');
+    }
+    flock($lock, LOCK_UN);
+    fclose($lock);
     return true;
 }
 

@@ -1,44 +1,32 @@
 <?php
-// Lockdown settings. Everything that differs between servers lives here.
-// No passwords in this file: the database login is read from astguiclient.conf.
+// Lockdown settings.
 
 return array(
-    // How long a whitelisted IP stays in the firewall.
-    'allow_days'     => 7,
-
-    // Wrong logins allowed from one IP before it is locked out, and for how long.
-    'max_tries'      => 5,
-    'lock_minutes'   => 15,
-
-    // Lowest vicidial_users.user_level that may open the firewall (1 = every active user).
-    'min_user_level' => 1,
-
-    // Where to send the user after access is granted.
-    // Empty = https://<this server's hostname>/vicidial/welcome.php (the old behaviour).
-    'redirect_url'   => '',
-
-    // VICIdial's own config file; the database login is read from it.
-    'conf_file'      => '/etc/astguiclient.conf',
-
-    // VICIdial's password hashing script, used only when system_settings.pass_hash_enabled = 1.
-    'bp_script'      => '/var/www/html/agc/bp.pl',
-
-    // Folder for the allow list and the failed-login counters (see INSTALL.md).
-    'data_dir'       => '/var/lib/lockdown',
-
-    // Root-owned helper that changes the firewall. The only command Apache may run with sudo.
-    'allow_cmd'      => '/usr/local/sbin/lockdown-allow',
-
-    // ---- Cluster sync -------------------------------------------------------
-    // Every server in the cluster, this one included. Put the SAME list on every server.
-    // After a login on any server, each server in the list is called at
-    // http://<server>:<cluster_port>/connecter.php and allows the same IP
-    // (what the old code.php did with one curl call per server).
-    // connecter.php only accepts calls that come from a server in this list.
-    // Use the addresses the servers reach each other on. Leave empty on a single server.
-    // Example: array('10.0.0.11', '10.0.0.12', '10.0.0.13')
-    'cluster_servers' => array(),
+    // ---- Cluster ----------------------------------------------------------------------------
+    // Every server in the cluster, this one included, one per line (host name or IP).
+    // Use the SAME list on every server. After a sign-in on any server, each server here is
+    // called at http://<server>:81/connecter.php and allows the same IP, like the curl lines
+    // in the old code.php. connecter.php only accepts calls from these servers.
+    // Leave the list empty on a single server.
+    'cluster_servers' => array(
+        // 'db-splendid',
+        // 'web-splendid',
+    ),
 
     // Port the lockdown folder is served on (the port users open access.php on).
     'cluster_port'   => 81,
+
+    // ---- Access -----------------------------------------------------------------------------
+    'allow_days'     => 7,     // days an IP stays allowed; signing in again renews it
+    'max_tries'      => 5,     // wrong logins from one IP before it is locked out ...
+    'lock_minutes'   => 15,    // ... for this long
+    'min_user_level' => 1,     // lowest vicidial_users.user_level that may sign in (1 = all active users)
+
+    // Where to go after access is granted. Empty = https://<this server>/vicidial/welcome.php
+    'redirect_url'   => '',
+
+    // ---- Files (normally nothing to change) -------------------------------------------------
+    'conf_file'      => '/etc/astguiclient.conf',      // VICIdial's config: database login
+    'bp_script'      => '/var/www/html/agc/bp.pl',     // VICIdial's password hashing (only if hashing is on)
+    'data_dir'       => '/var/lib/lockdown',           // allow list and failed-login counters (made by setup.sh)
 );
