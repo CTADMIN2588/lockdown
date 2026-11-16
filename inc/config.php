@@ -23,7 +23,7 @@ return array(
     // VICIdial's password hashing script, used only when system_settings.pass_hash_enabled = 1.
     'bp_script'      => '/var/www/html/agc/bp.pl',
 
-    // Folder for the allow list and the failed-login counters (see INSTALL.md).
+    // Folder for the allow list and the failed-login counters.
     'data_dir'       => '/var/lib/lockdown',
 
     // Root-owned helper that changes the firewall. The only command Apache may run with sudo.
