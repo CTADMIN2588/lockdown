@@ -252,7 +252,7 @@ function ld_allow_ip($ip, $user)
     $list = $config['data_dir'] . '/allowed.list';
     $lock = @fopen($config['data_dir'] . '/.allowed.lock', 'c');
     if (!$lock || !flock($lock, LOCK_EX)) {
-        ld_log('cannot lock ' . $config['data_dir'] . '/.allowed.lock (run setup.sh)');
+        ld_log('cannot lock ' . $config['data_dir'] . '/.allowed.lock: missing or not owned by the web server');
         return false;
     }
 
@@ -289,7 +289,7 @@ function ld_allow_ip($ip, $user)
     }
     $keep[] = $ip . ' ' . $expires . ' ' . $user;
     if (@file_put_contents($list, implode("\n", $keep) . "\n") === false) {
-        ld_log('cannot write ' . $list . ' (run setup.sh); ' . $ip . ' is allowed but will not expire');
+        ld_log('cannot write ' . $list . ' (not writable by the web server); ' . $ip . ' is allowed but will not expire');
     }
     flock($lock, LOCK_UN);
     fclose($lock);

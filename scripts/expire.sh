@@ -1,5 +1,5 @@
 #!/bin/bash
-# Lockdown hourly clean-up. Run by root from cron (setup.sh adds the cron line).
+# Lockdown hourly clean-up. Run by root from cron, every hour.
 #
 # Removes every IP whose time is up from the firewalld "trusted" zone. Only IPs that lockdown
 # added with an expiry are touched; anything an admin added by hand (expiry 0, or not in the

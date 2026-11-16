@@ -28,5 +28,5 @@ return array(
     // ---- Files (normally nothing to change) -------------------------------------------------
     'conf_file'      => '/etc/astguiclient.conf',      // VICIdial's config: database login
     'bp_script'      => '/var/www/html/agc/bp.pl',     // VICIdial's password hashing (only if hashing is on)
-    'data_dir'       => '/var/lib/lockdown',           // allow list and failed-login counters (made by setup.sh)
+    'data_dir'       => '/var/lib/lockdown',           // allow list and failed-login counters
 );
