@@ -75,19 +75,31 @@ The web server user must be able to read `/etc/astguiclient.conf` (it already ca
 
 ## 7. Cluster sync (skip on a single server)
 
-1. Make one shared key and put the **same file** on every server:
+A sign-in on any server whitelists the IP on every server, the same way the old `code.php` did
+with one `curl` call per server.
 
-   ```bash
-   head -c 48 /dev/urandom | base64 > /etc/lockdown.key
-   chown root:apache /etc/lockdown.key
-   chmod 640 /etc/lockdown.key
-   ```
+On **every** server, put the same list of all cluster servers (that server included) in
+`/var/www/lockdown/inc/config.php`:
 
-2. On each server, edit `/var/www/lockdown/inc/config.php`:
-   - `peers`: the `connecter.php` address of every **other** server.
-   - `peer_ips`: the IP addresses the **other** servers call from.
+```php
+'cluster_servers' => array('10.0.0.11', '10.0.0.12', '10.0.0.13'),
+```
 
-`connecter.php` refuses everything that is not a signed POST from an address in `peer_ips`.
+- Use the addresses the servers reach each other on (internal IPs if they have them).
+- Each server is called at `http://<server>:81/connecter.php`. If the lockdown folder is served
+  on another port, change `cluster_port`.
+- `connecter.php` only accepts calls from a server in the list. Take a server off the list when you retire it.
+
+Check from each server that it reaches the others (this whitelists nothing):
+
+```bash
+curl -s -X POST -w ' HTTP %{http_code}\n' http://10.0.0.12:81/connecter.php
+```
+
+- `bad request ... HTTP 400`: works.
+- `not allowed ... HTTP 403`: the calling server is not in that server's list. The PHP error log
+  on that server shows the address it saw (`connecter.php refused a call from ...`).
+- `HTTP 000`: not reachable (firewall, wrong address or port).
 
 ## 8. IPs that were already in the firewall
 
@@ -112,6 +124,8 @@ firewall-cmd --reload
 | `lock_minutes` | 15 | Length of the lockout |
 | `min_user_level` | 1 | Lowest VICIdial user level that may use the page |
 | `redirect_url` | empty | Where to go after access is granted (empty = this server's `/vicidial/welcome.php`) |
+| `cluster_servers` | empty | All cluster servers, same list on every server (empty = single server) |
+| `cluster_port` | 81 | Port `connecter.php` is called on |
 
 ## Where to look when something fails
 

@@ -277,42 +277,86 @@ function ld_allow_ip($ip, $user)
 
 // ---------------------------------------------------------------- cluster sync
 
-function ld_key()
+// The servers in 'cluster_servers' as array('host' => ..., 'url' => ...). An entry is an IP address
+// or a host name; a full http(s):// URL is also accepted for a server not on cluster_port.
+function ld_cluster_servers()
 {
     $config = ld_config();
-    $key = trim((string) @file_get_contents($config['key_file']));
-    return strlen($key) >= 32 ? $key : '';
+    $list = (isset($config['cluster_servers']) && is_array($config['cluster_servers'])) ? $config['cluster_servers'] : array();
+    $port = isset($config['cluster_port']) ? (int) $config['cluster_port'] : 81;
+    $servers = array();
+    foreach ($list as $entry) {
+        $entry = trim((string) $entry);
+        if (preg_match('#^https?://#i', $entry)) {
+            $host = trim((string) parse_url($entry, PHP_URL_HOST), '[]');
+            $url = $entry;
+        } else {
+            $host = $entry;
+            $url = 'http://' . (strpos($host, ':') !== false ? '[' . $host . ']' : $host) . ':' . $port . '/connecter.php';
+        }
+        if ($host === '' || (!ld_valid_ip($host) && !preg_match('/^[A-Za-z0-9.-]{1,253}$/', $host))) {
+            ld_log('cluster_servers: ignoring "' . preg_replace('/[^\x21-\x7e]/', '?', $entry) . '"');
+            continue;
+        }
+        $servers[] = array('host' => $host, 'url' => $url);
+    }
+    return $servers;
 }
 
-function ld_sign($ts, $ip, $user, $key)
+// The IP addresses of a cluster_servers entry. A host name is looked up in DNS / /etc/hosts.
+function ld_host_ips($host)
 {
-    return hash_hmac('sha256', $ts . '|' . $ip . '|' . $user, $key);
+    if (ld_valid_ip($host)) {
+        return array($host);
+    }
+    $ips = @gethostbynamel($host);
+    return is_array($ips) ? $ips : array();
 }
 
-// Tells every other cluster server to allow the IP. Returns how many could not be reached.
+// True when a cluster_servers entry is this server, so it is not called a second time.
+function ld_is_this_server($host)
+{
+    $mine = array('127.0.0.1', '::1');
+    if (!empty($_SERVER['SERVER_ADDR'])) {
+        $mine[] = preg_replace('/^::ffff:/i', '', (string) $_SERVER['SERVER_ADDR']);
+    }
+    $name = gethostname();
+    if (is_string($name) && $name !== '') {
+        if (strcasecmp($name, $host) === 0) {
+            return true;
+        }
+        $mine = array_merge($mine, ld_host_ips($name));
+    }
+    return count(array_intersect(ld_host_ips($host), $mine)) > 0;
+}
+
+// True when a call to connecter.php comes from a server in cluster_servers (or from this server).
+function ld_is_cluster_caller($ip)
+{
+    if ($ip === '127.0.0.1' || $ip === '::1') {
+        return true;
+    }
+    foreach (ld_cluster_servers() as $server) {
+        if (in_array($ip, ld_host_ips($server['host']), true)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Tells every other server in cluster_servers to allow the IP too: one call per server, like the
+// old code.php. Returns how many servers could not be reached (the login still succeeds here).
 function ld_notify_peers($ip, $user)
 {
-    $config = ld_config();
-    if (empty($config['peers'])) {
-        return 0;
-    }
-    $key = ld_key();
-    if ($key === '') {
-        ld_log('cluster sync skipped: ' . $config['key_file'] . ' is missing or shorter than 32 characters');
-        return count($config['peers']);
-    }
     $failed = 0;
-    foreach ($config['peers'] as $url) {
-        $ts = time();
-        $ch = curl_init($url);
+    foreach (ld_cluster_servers() as $server) {
+        if (ld_is_this_server($server['host'])) {
+            continue;
+        }
+        $ch = curl_init($server['url']);
         curl_setopt_array($ch, array(
             CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => http_build_query(array(
-                'ip'   => $ip,
-                'user' => $user,
-                'ts'   => $ts,
-                'sig'  => ld_sign($ts, $ip, $user, $key),
-            )),
+            CURLOPT_POSTFIELDS     => http_build_query(array('ip' => $ip, 'user' => $user)),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CONNECTTIMEOUT => 3,
             CURLOPT_TIMEOUT        => 6,
@@ -321,7 +365,7 @@ function ld_notify_peers($ip, $user)
         $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($status !== 200) {
             $failed++;
-            ld_log('cluster sync to ' . $url . ' failed (HTTP ' . $status . ' ' . curl_error($ch) . ') for ' . $ip);
+            ld_log('cluster sync to ' . $server['url'] . ' failed (HTTP ' . $status . ' ' . curl_error($ch) . ') for ' . $ip);
         }
         curl_close($ch);
     }

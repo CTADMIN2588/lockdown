@@ -30,13 +30,15 @@ return array(
     'allow_cmd'      => '/usr/local/sbin/lockdown-allow',
 
     // ---- Cluster sync -------------------------------------------------------
-    // Shared secret for server-to-server calls. Same file content on every server.
-    'key_file'       => '/etc/lockdown.key',
+    // Every server in the cluster, this one included. Put the SAME list on every server.
+    // After a login on any server, each server in the list is called at
+    // http://<server>:<cluster_port>/connecter.php and allows the same IP
+    // (what the old code.php did with one curl call per server).
+    // connecter.php only accepts calls that come from a server in this list.
+    // Use the addresses the servers reach each other on. Leave empty on a single server.
+    // Example: array('10.0.0.11', '10.0.0.12', '10.0.0.13')
+    'cluster_servers' => array(),
 
-    // connecter.php on the OTHER servers. After a login here, each one is told to allow the IP.
-    // Example: array('http://10.0.0.12:81/connecter.php', 'http://10.0.0.13:81/connecter.php')
-    'peers'          => array(),
-
-    // Addresses allowed to call connecter.php on THIS server (the other cluster servers).
-    'peer_ips'       => array('127.0.0.1', '::1'),
+    // Port the lockdown folder is served on (the port users open access.php on).
+    'cluster_port'   => 81,
 );
